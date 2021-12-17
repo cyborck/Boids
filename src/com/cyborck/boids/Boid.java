@@ -90,7 +90,7 @@ public class Boid {
             // apply behaviors
             applyForce( alignment );
             applyForce( cohesion );
-            //applyForce( separation );
+            applyForce( separation );
         }
     }
 
