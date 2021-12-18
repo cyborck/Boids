@@ -44,6 +44,10 @@ public class Vector {
         return new Vector( x, y );
     }
 
+    public double distanceSq (Vector v){
+        return subtract( this, v ).magnitudeSq();
+    }
+
     public double distance ( Vector v ) {
         return subtract( this, v ).magnitude();
     }
@@ -54,6 +58,10 @@ public class Vector {
 
     public double angle360 () {
         return Math.atan2( y, x );
+    }
+
+    public double magnitudeSq(){
+        return x*x + y*y;
     }
 
     public double magnitude () {

@@ -45,24 +45,10 @@ public class Gui extends JFrame {
             g2d.setColor( Color.BLACK );
             g2d.fillRect( 0, 0, width, height );
 
-            // draw boids, also on all the other sides for smooth transition from one side to another
-            drawBoids( g2d, -width, -height );
-            drawBoids( g2d, 0, -height );
-            drawBoids( g2d, width, -height );
-            drawBoids( g2d, -width, 0 );
-            drawBoids( g2d, 0, 0 );
-            drawBoids( g2d, width, 0 );
-            drawBoids( g2d, -width, height );
-            drawBoids( g2d, 0, height );
-            drawBoids( g2d, width, height );
+            // draw boids
+            for ( Boid b: boids ) b.draw( g2d );
 
             repaint();
-        }
-
-        private void drawBoids ( Graphics2D g, int xOffset, int yOffset ) {
-            g.translate( xOffset, yOffset );
-            for ( Boid b: boids ) b.draw( g );
-            g.translate( -xOffset, -yOffset );
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.cyborck.boids;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Boid {
     private static final double RADIUS = 10; // radius of the circle that contains all the corners
@@ -23,13 +25,13 @@ public class Boid {
 
     private Vector getNearestPosition ( Boid other ) {
         // check positions on all sides
-        double shortestDistance = Double.MAX_VALUE;
+        double shortestDistanceSq = Double.MAX_VALUE;
         int index = -1;
         Vector[] ps = other.getAllPositions();
         for ( int i = 0; i < ps.length; i++ ) {
-            double distance = position.distance( ps[ i ] );
-            if ( distance < shortestDistance ) {
-                shortestDistance = distance;
+            double distanceSq = position.distanceSq( ps[ i ] );
+            if ( distanceSq < shortestDistanceSq ) {
+                shortestDistanceSq = distanceSq;
                 index = i;
             }
         }
@@ -37,17 +39,23 @@ public class Boid {
     }
 
     public Vector[] getAllPositions () {
-        Vector[] positions = new Vector[ 9 ];
-        int index = 0;
-        for ( int i = -1; i <= 1; i++ ) {
-            int xOffset = i * world.getWidth();
-            for ( int j = -1; j <= 1; j++ ) {
-                int yOffset = j * world.getHeight();
-                positions[ index++ ] = Vector.add( position, new Vector( xOffset, yOffset ) );
-            }
-        }
+        List<Vector> positions = new ArrayList<>();
 
-        return positions;
+        List<Double> xs = new ArrayList<>();
+        xs.add( position.getX() );
+        if ( position.getX() - world.getWidth() >= -VISIBLE_RADIUS ) xs.add( position.getX() - world.getWidth() );
+        if ( position.getX() < VISIBLE_RADIUS ) xs.add( position.getX() + world.getWidth() );
+
+        List<Double> ys = new ArrayList<>();
+        ys.add( position.getY() );
+        if ( position.getY() - world.getHeight() >= -VISIBLE_RADIUS ) ys.add( position.getY() - world.getHeight() );
+        if ( position.getY() < VISIBLE_RADIUS ) ys.add( position.getY() + world.getHeight() );
+
+        for ( double x: xs )
+            for ( double y: ys )
+                positions.add( new Vector( x, y ) );
+
+        return positions.toArray( new Vector[ 0 ] );
     }
 
     public void applyForce ( Vector force ) {
@@ -111,6 +119,21 @@ public class Boid {
     public void draw ( Graphics2D g ) {
         double rotation = rotation();
 
+        Vector a = Vector.fromAngle( rotation, RADIUS );
+        Vector b = Vector.fromAngle( rotation + 0.75 * Math.PI, RADIUS );
+        Vector c = Vector.fromAngle( rotation + 1.25 * Math.PI, RADIUS );
+
+        for ( Vector p: getAllPositions() ) {
+            Vector a_ = Vector.add( p, a );
+            Vector b_ = Vector.add( p, b );
+            Vector c_ = Vector.add( p, c );
+            Gui.drawTriangle( g, a_, b_, c_, COLOR );
+        }
+    }
+
+    public void draw_ ( Graphics2D g ) {
+        double rotation = rotation();
+
         Vector a = Vector.add( position, Vector.fromAngle( rotation, RADIUS ) );
         Vector b = Vector.add( position, Vector.fromAngle( rotation + 0.75 * Math.PI, RADIUS ) );
         Vector c = Vector.add( position, Vector.fromAngle( rotation + 1.25 * Math.PI, RADIUS ) );
@@ -118,8 +141,8 @@ public class Boid {
     }
 
     public boolean visibleFor ( Boid b ) {
-        if ( position.distance( b.getPosition() ) <= VISIBLE_RADIUS ) return true;
-        return position.distance( getNearestPosition( b ) ) < VISIBLE_RADIUS;
+        if ( position.distanceSq( b.getPosition() ) <= VISIBLE_RADIUS * VISIBLE_RADIUS ) return true;
+        return position.distanceSq( getNearestPosition( b ) ) < VISIBLE_RADIUS * VISIBLE_RADIUS;
     }
 
     public double rotation () {
